@@ -9,60 +9,63 @@
 
 #include "panic.h"
 
+#include <endian.h>
+#if __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
+#   error "Only little endian systems are supported for now"
+#endif
 
 #define FOREACH_INSTR(M) \
-    /* h stands for HACK */ \
-    /* h  n, args    str       ident      opcode      func3   func7     */ \
-    M( 0, 2, "rn ", "lui",     LUI,       0b0110111,  0,      0          ) \
-    M( 0, 2, "rn ", "auipc",   AUIPC,     0b0010111,  0,      0          ) \
-    M( 0, 2, "rn ", "jal",     JAL,       0b1101111,  0,      0          ) \
-    M( 0, 3, "rnr", "jalr",    JALR,      0b1100111,  0,      0          ) \
-    M( 0, 3, "rrn", "beq",     BEQ,       0b1100011,  0b000,  0          ) \
-    M( 0, 3, "rrn", "bne",     BNE,       0b1100011,  0b001,  0          ) \
-    M( 0, 3, "rrn", "blt",     BLT,       0b1100011,  0b100,  0          ) \
-    M( 0, 3, "rrn", "bge",     BGE,       0b1100011,  0b101,  0          ) \
-    M( 0, 3, "rrn", "bltu",    BLTU,      0b1100011,  0b110,  0          ) \
-    M( 0, 3, "rrn", "bgeu",    BGEU,      0b1100011,  0b111,  0          ) \
-    M( 0, 3, "rnr", "lb",      LB,        0b0000011,  0b000,  0          ) \
-    M( 0, 3, "rnr", "lh",      LH,        0b0000011,  0b001,  0          ) \
-    M( 0, 3, "rnr", "lw",      LW,        0b0000011,  0b010,  0          ) \
-    M( 0, 3, "rnr", "lbu",     LBU,       0b0000011,  0b100,  0          ) \
-    M( 0, 3, "rnr", "lhu",     LHU,       0b0000011,  0b101,  0          ) \
-    M( 0, 3, "rnr", "sb",      SB,        0b0100011,  0b000,  0          ) \
-    M( 0, 3, "rnr", "sh",      SH,        0b0100011,  0b001,  0          ) \
-    M( 0, 3, "rnr", "sw",      SW,        0b0100011,  0b010,  0          ) \
-    M( 0, 3, "rrn", "addi",    ADDI,      0b0010011,  0b000,  0          ) \
-    M( 0, 3, "rrn", "slti",    SLTI,      0b0010011,  0b010,  0          ) \
-    M( 0, 3, "rrn", "sltiu",   SLTIU,     0b0010011,  0b011,  0          ) \
-    M( 0, 3, "rrn", "xori",    XORI,      0b0010011,  0b100,  0          ) \
-    M( 0, 3, "rrn", "ori",     ORI,       0b0010011,  0b110,  0          ) \
-    M( 0, 3, "rrn", "andi",    ANDI,      0b0010011,  0b111,  0          ) \
-    M( 0, 3, "rrn", "slli",    SLLI,      0b0010011,  0b001,  0b0000000  ) \
-    M( 0, 3, "rrn", "srli",    SRLI,      0b0010011,  0b101,  0b0000000  ) \
-    M( 0, 3, "rrn", "srai",    SRAI,      0b0010011,  0b101,  0b0100000  ) \
-    M( 0, 3, "rrr", "add",     ADD,       0b0110011,  0b000,  0b0000000  ) \
-    M( 0, 3, "rrr", "sub",     SUB,       0b0110011,  0b000,  0b0100000  ) \
-    M( 0, 3, "rrr", "sll",     SLL,       0b0110011,  0b001,  0b0000000  ) \
-    M( 0, 3, "rrr", "slt",     SLT,       0b0110011,  0b010,  0b0000000  ) \
-    M( 0, 3, "rrr", "sltu",    SLTU,      0b0110011,  0b011,  0b0000000  ) \
-    M( 0, 3, "rrr", "xor",     XOR,       0b0110011,  0b100,  0b0000000  ) \
-    M( 0, 3, "rrr", "srl",     SRL,       0b0110011,  0b101,  0b0000000  ) \
-    M( 0, 3, "rrr", "sra",     SRA,       0b0110011,  0b101,  0b0100000  ) \
-    M( 0, 3, "rrr", "or",      OR,        0b0110011,  0b110,  0b0000000  ) \
-    M( 0, 3, "rrr", "and",     AND,       0b0110011,  0b111,  0b0000000  ) \
-    M( 0, 2, "   ", "fence",   FENCE,     0b0001111,  0b000,  0          ) \
-    M( 1, 0, "   ", "fence.tso", FENCE_TSO, 0b0001111,  0b000,  0          ) \
-    M( 2, 0, "   ", "pause",   PAUSE,     0b0001111,  0b000,  0          ) \
-    M( 0, 0, "   ", "ecall",   ECALL,     0b1110011,  0b000,  0          ) \
-    M( 1, 0, "   ", "ebreak",  EBREAK,    0b1110011,  0b000,  0          ) \
-    M( 0, 3, "rrr", "mul",     MUL,       0b0110011,  0b000,  0b0000001  ) \
-    M( 0, 3, "rrr", "mulh",    MULH,      0b0110011,  0b001,  0b0000001  ) \
-    M( 0, 3, "rrr", "mulhsu",  MULHSU,    0b0110011,  0b010,  0b0000001  ) \
-    M( 0, 3, "rrr", "mulhu",   MULHU,     0b0110011,  0b011,  0b0000001  ) \
-    M( 0, 3, "rrr", "div",     DIV,       0b0110011,  0b100,  0b0000001  ) \
-    M( 0, 3, "rrr", "divu",    DIVU,      0b0110011,  0b101,  0b0000001  ) \
-    M( 0, 3, "rrr", "rem",     REM,       0b0110011,  0b110,  0b0000001  ) \
-    M( 0, 3, "rrr", "remu",    REMU,      0b0110011,  0b111,  0b0000001  )
+    /* n, args    str       ident      opcode      func3   func7     */ \
+    M( 2, "rn ", "lui",     LUI,       0b0110111,  0,      0          ) \
+    M( 2, "rn ", "auipc",   AUIPC,     0b0010111,  0,      0          ) \
+    M( 2, "rn ", "jal",     JAL,       0b1101111,  0,      0          ) \
+    M( 3, "rnr", "jalr",    JALR,      0b1100111,  0,      0          ) \
+    M( 3, "rrn", "beq",     BEQ,       0b1100011,  0b000,  0          ) \
+    M( 3, "rrn", "bne",     BNE,       0b1100011,  0b001,  0          ) \
+    M( 3, "rrn", "blt",     BLT,       0b1100011,  0b100,  0          ) \
+    M( 3, "rrn", "bge",     BGE,       0b1100011,  0b101,  0          ) \
+    M( 3, "rrn", "bltu",    BLTU,      0b1100011,  0b110,  0          ) \
+    M( 3, "rrn", "bgeu",    BGEU,      0b1100011,  0b111,  0          ) \
+    M( 3, "rnr", "lb",      LB,        0b0000011,  0b000,  0          ) \
+    M( 3, "rnr", "lh",      LH,        0b0000011,  0b001,  0          ) \
+    M( 3, "rnr", "lw",      LW,        0b0000011,  0b010,  0          ) \
+    M( 3, "rnr", "lbu",     LBU,       0b0000011,  0b100,  0          ) \
+    M( 3, "rnr", "lhu",     LHU,       0b0000011,  0b101,  0          ) \
+    M( 3, "rnr", "sb",      SB,        0b0100011,  0b000,  0          ) \
+    M( 3, "rnr", "sh",      SH,        0b0100011,  0b001,  0          ) \
+    M( 3, "rnr", "sw",      SW,        0b0100011,  0b010,  0          ) \
+    M( 3, "rrn", "addi",    ADDI,      0b0010011,  0b000,  0          ) \
+    M( 3, "rrn", "slti",    SLTI,      0b0010011,  0b010,  0          ) \
+    M( 3, "rrn", "sltiu",   SLTIU,     0b0010011,  0b011,  0          ) \
+    M( 3, "rrn", "xori",    XORI,      0b0010011,  0b100,  0          ) \
+    M( 3, "rrn", "ori",     ORI,       0b0010011,  0b110,  0          ) \
+    M( 3, "rrn", "andi",    ANDI,      0b0010011,  0b111,  0          ) \
+    M( 3, "rrn", "slli",    SLLI,      0b0010011,  0b001,  0b0000000  ) \
+    M( 3, "rrn", "srli",    SRLI,      0b0010011,  0b101,  0b0000000  ) \
+    M( 3, "rrn", "srai",    SRAI,      0b0010011,  0b101,  0b0100000  ) \
+    M( 3, "rrr", "add",     ADD,       0b0110011,  0b000,  0b0000000  ) \
+    M( 3, "rrr", "sub",     SUB,       0b0110011,  0b000,  0b0100000  ) \
+    M( 3, "rrr", "sll",     SLL,       0b0110011,  0b001,  0b0000000  ) \
+    M( 3, "rrr", "slt",     SLT,       0b0110011,  0b010,  0b0000000  ) \
+    M( 3, "rrr", "sltu",    SLTU,      0b0110011,  0b011,  0b0000000  ) \
+    M( 3, "rrr", "xor",     XOR,       0b0110011,  0b100,  0b0000000  ) \
+    M( 3, "rrr", "srl",     SRL,       0b0110011,  0b101,  0b0000000  ) \
+    M( 3, "rrr", "sra",     SRA,       0b0110011,  0b101,  0b0100000  ) \
+    M( 3, "rrr", "or",      OR,        0b0110011,  0b110,  0b0000000  ) \
+    M( 3, "rrr", "and",     AND,       0b0110011,  0b111,  0b0000000  ) \
+    M( 2, "   ", "fence",   FENCE,     0b0001111,  0b000,  0          ) \
+    M( 0, "   ", "fence.tso", FENCE_TSO, 0b0001111,  0b000,  0          ) \
+    M( 0, "   ", "pause",   PAUSE,     0b0001111,  0b000,  0          ) \
+    M( 0, "   ", "ecall",   ECALL,     0b1110011,  0b000,  0          ) \
+    M( 0, "   ", "ebreak",  EBREAK,    0b1110011,  0b000,  0          ) \
+    M( 3, "rrr", "mul",     MUL,       0b0110011,  0b000,  0b0000001  ) \
+    M( 3, "rrr", "mulh",    MULH,      0b0110011,  0b001,  0b0000001  ) \
+    M( 3, "rrr", "mulhsu",  MULHSU,    0b0110011,  0b010,  0b0000001  ) \
+    M( 3, "rrr", "mulhu",   MULHU,     0b0110011,  0b011,  0b0000001  ) \
+    M( 3, "rrr", "div",     DIV,       0b0110011,  0b100,  0b0000001  ) \
+    M( 3, "rrr", "divu",    DIVU,      0b0110011,  0b101,  0b0000001  ) \
+    M( 3, "rrr", "rem",     REM,       0b0110011,  0b110,  0b0000001  ) \
+    M( 3, "rrr", "remu",    REMU,      0b0110011,  0b111,  0b0000001  )
 
 enum instr_fmt_type {
     instr_fmt_r,
@@ -135,9 +138,7 @@ union instr_generic {
     struct instr_j j;
 };
 
-#define MAKE_INSTR_BIN(type, lst) ((union instr_union) { .#type = lst }.raw)
-
-#define GEN_ENUM_ELEMENT(h, nargs, args, str, ident, opcode, func3, func7) INSTR_##ident,
+#define GEN_ENUM_ELEMENT(nargs, args, str, ident, opcode, func3, func7) INSTR_##ident,
 enum instr {
     FOREACH_INSTR(GEN_ENUM_ELEMENT)
 };
@@ -156,11 +157,6 @@ uint8_t instr_func7(enum instr instr);
 uint8_t instr_n_args(enum instr instr);
 const char* instr_args_types(enum instr instr);
 
-enum instr opf3f7_instr(uint8_t opcode, uint8_t funct3, uint8_t funct7);
-
 enum instr parse_instr(const char* str);
-
-uint8_t bin_opcode(uint32_t bin);
-enum instr_fmt_type opcode_fmt_type(uint8_t opcode);
 
 #endif // _INSTRUCTIONS_H
