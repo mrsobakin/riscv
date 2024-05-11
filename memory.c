@@ -139,7 +139,7 @@ uint32_t mem_read16(struct memory* m, uint32_t addr) {
     ++m->total;
 
     uint8_t a, b;
-    if (cache_read(&m->cache, m, addr, &a) &&
+    if (cache_read(&m->cache, m, addr, &a) &
         cache_read(&m->cache, m, addr + 1, &b)) {
         ++m->hits;
     }
@@ -153,9 +153,9 @@ uint32_t mem_read32(struct memory* m, uint32_t addr) {
     ++m->total;
 
     uint8_t a, b, c, d;
-    if (cache_read(&m->cache, m, addr, &a) &&
-        cache_read(&m->cache, m, addr + 1, &b) &&
-        cache_read(&m->cache, m, addr + 2, &c) &&
+    if (cache_read(&m->cache, m, addr, &a) &
+        cache_read(&m->cache, m, addr + 1, &b) &
+        cache_read(&m->cache, m, addr + 2, &c) &
         cache_read(&m->cache, m, addr + 3, &d)) {
         ++m->hits;
     }
@@ -176,16 +176,16 @@ void mem_write8(struct memory* m, uint32_t addr, uint32_t val) {
 
 void mem_write16(struct memory* m, uint32_t addr, uint32_t val) {
     ++m->total;
-    if (cache_write(&m->cache, m, addr, val) &&
+    if (cache_write(&m->cache, m, addr, val) &
         cache_write(&m->cache, m, addr + 1, val >> 8)) {
     }
 }
 
 void mem_write32(struct memory* m, uint32_t addr, uint32_t val) {
     ++m->total;
-    if (cache_write(&m->cache, m, addr, val) &&
-        cache_write(&m->cache, m, addr + 1, val >> 8) &&
-        cache_write(&m->cache, m, addr + 2, val >> 16) &&
+    if (cache_write(&m->cache, m, addr, val) &
+        cache_write(&m->cache, m, addr + 1, val >> 8) &
+        cache_write(&m->cache, m, addr + 2, val >> 16) &
         cache_write(&m->cache, m, addr + 3, val >> 24)) {
         ++m->hits;
     }
