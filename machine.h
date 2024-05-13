@@ -7,11 +7,6 @@
 #include "core.h"
 #include "memory.h"
 
-struct mem_stats {
-    size_t hits;
-    size_t total;
-};
-
 struct machine {
     uint32_t pc;
     struct memory mem;
@@ -27,7 +22,6 @@ int32_t sext32(uint32_t x);
 struct machine machine_new(enum cache_replacement_policy policy);
 
 void machine_process_ir(struct machine* m, struct intermediate ir);
-void machine_process_pc(struct machine* m);
 
 void machine_debug_print(struct machine* m);
 

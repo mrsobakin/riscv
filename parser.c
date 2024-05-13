@@ -106,7 +106,7 @@ struct intermediate parse_skkv_asm(const char* line) {
     int n_parsed;
     char s_instr[16], s_a[16], s_b[16], s_c[16];
     enum instr instr;
-    int32_t a, b, c;
+    int32_t a = 0, b = 0, c = 0;
 
     n_parsed = sscanf(line, " %[^, ] %[^, ] , %[^,( ] %*[,(] %[^,) ] ", s_instr, s_a, s_b, s_c);
 

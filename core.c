@@ -1,26 +1,26 @@
 #include "core.h"
 
-#include <stdint.h>
-
 #include "instructions.h"
 
 
 uint32_t ir_to_bin(struct intermediate ir) {
+    uint32_t opcode = instr_opcode(ir.instr);
+
     switch (ir.instr) {
         case INSTR_LUI:
         case INSTR_AUIPC:
             return (union instr_generic) {
                 .u = {
-                    .opcode = instr_opcode(ir.instr),
+                    .opcode = opcode,
                     .rd = ir.a,
-                    .imm = ir.b,
+                    .imm31_12 = ir.b >> 12,
                 }
             }.raw;
 
         case INSTR_JAL:
             return (union instr_generic) {
                 .j = {
-                    .opcode = instr_opcode(ir.instr),
+                    .opcode = opcode,
                     .rd = ir.a,
                     .imm10_1  = ir.b >> 1,
                     .imm11    = ir.b >> 11,
@@ -32,11 +32,11 @@ uint32_t ir_to_bin(struct intermediate ir) {
         case INSTR_JALR:
             return (union instr_generic) {
                 .i = {
-                    .opcode = instr_opcode(ir.instr),
+                    .opcode = opcode,
                     .rd = ir.a,
-                    .funct3 = 0b000,
+                    .funct3 = instr_func3(ir.instr),
                     .rs1 = ir.c,
-                    .imm = ir.b,
+                    .imm11_0 = ir.b,
                 }
             }.raw;
 
@@ -48,7 +48,7 @@ uint32_t ir_to_bin(struct intermediate ir) {
         case INSTR_BGEU:
             return (union instr_generic) {
                 .b = {
-                    .opcode = instr_opcode(ir.instr),
+                    .opcode = opcode,
                     .rs1 = ir.a,
                     .rs2 = ir.b,
                     .funct3 = instr_func3(ir.instr),
@@ -66,11 +66,11 @@ uint32_t ir_to_bin(struct intermediate ir) {
         case INSTR_LHU:
             return (union instr_generic) {
                 .i = {
-                    .opcode = instr_opcode(ir.instr),
+                    .opcode = opcode,
                     .rd = ir.a,
                     .funct3 = instr_func3(ir.instr),
                     .rs1 = ir.c,
-                    .imm = ir.b,
+                    .imm11_0 = ir.b,
                 }
             }.raw;
 
@@ -79,7 +79,7 @@ uint32_t ir_to_bin(struct intermediate ir) {
         case INSTR_SW:
             return (union instr_generic) {
                 .s = {
-                    .opcode = instr_opcode(ir.instr),
+                    .opcode = opcode,
                     .rs1 = ir.c,
                     .rs2 = ir.a,
                     .funct3 = instr_func3(ir.instr),
@@ -96,11 +96,11 @@ uint32_t ir_to_bin(struct intermediate ir) {
         case INSTR_ANDI:
             return (union instr_generic) {
                 .i = {
-                    .opcode = instr_opcode(ir.instr),
+                    .opcode = opcode,
                     .rd = ir.a,
                     .rs1 = ir.b,
                     .funct3 = instr_func3(ir.instr),
-                    .imm = ir.c,
+                    .imm11_0 = ir.c,
                 }
             }.raw;
 
@@ -108,22 +108,22 @@ uint32_t ir_to_bin(struct intermediate ir) {
         case INSTR_SRLI:
             return (union instr_generic) {
                 .i = {
-                    .opcode = instr_opcode(ir.instr),
+                    .opcode = opcode,
                     .rd = ir.a,
                     .rs1 = ir.b,
                     .funct3 = instr_func3(ir.instr),
-                    .imm = ir.c,
+                    .imm11_0 = ir.c & 0b11111,
                 }
             }.raw;
 
         case INSTR_SRAI:
             return (union instr_generic) {
                 .i = {
-                    .opcode = instr_opcode(ir.instr),
+                    .opcode = opcode,
                     .rd = ir.a,
                     .rs1 = ir.b,
                     .funct3 = instr_func3(ir.instr),
-                    .imm = 0b010000000000 | (ir.c & 0b11111),
+                    .imm11_0 = 0b010000000000 | (ir.c & 0b11111),
                 }
             }.raw;
 
@@ -147,7 +147,7 @@ uint32_t ir_to_bin(struct intermediate ir) {
         case INSTR_REMU:
             return (union instr_generic) {
                 .r = {
-                    .opcode = instr_opcode(ir.instr),
+                    .opcode = opcode,
                     .rd = ir.a,
                     .rs1 = ir.b,
                     .rs2 = ir.c,
@@ -159,16 +159,20 @@ uint32_t ir_to_bin(struct intermediate ir) {
         case INSTR_FENCE:
             return (union instr_generic) {
                 .i = {
-                    .opcode = instr_opcode(ir.instr),
-                    .imm = ir.b | ir.a << 4,
+                    .opcode = opcode,
+                    .imm11_0 = ir.b | ir.a << 4,
                 }
             }.raw;
+
         case INSTR_FENCE_TSO:
             return 0x8330000F;
+
         case INSTR_ECALL:
             return 0x00000073;
+
         case INSTR_EBREAK:
             return 0x00100073;
+
         case INSTR_PAUSE:
             return 0x0100000F;
     }
