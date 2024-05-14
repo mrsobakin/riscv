@@ -13,7 +13,7 @@ uint32_t ir_to_bin(struct intermediate ir) {
                 .u = {
                     .opcode = opcode,
                     .rd = ir.a,
-                    .imm31_12 = ir.b >> 12,
+                    .imm31_12 = ir.b,
                 }
             }.raw;
 
