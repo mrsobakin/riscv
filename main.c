@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
     }
 
     char line_buf[256];
-    struct intermediate instructions[1024];
+    struct intermediate instructions[16 * 1024];
     uint32_t i = 0;
 
     while (fgets(line_buf, sizeof line_buf, asm_fp)) {
