@@ -39,3 +39,4 @@ mul t5, t5, t1 // t = 4 * N
 add a0, a0, t5 // pc += 4 * N
 addi a1, a1, 1 // ++y
 blt a1, t0, -112
+jalr zero, 0, ra // Jump to ra
