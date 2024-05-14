@@ -88,7 +88,6 @@ int main(int argc, char* argv[]) {
             m.pc += 4;
             machine_process_ir(&m, instructions[pc]);
         }
-
         printf("LRU\thit rate: %3.4f%%\n", 100 * (float)m.mem.hits / (float)m.mem.total);
     }
 
@@ -105,4 +104,6 @@ int main(int argc, char* argv[]) {
 
     fclose(asm_fp);
     if (bin_fp) fclose(bin_fp);
+
+    return 0;
 }
