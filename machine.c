@@ -222,6 +222,8 @@ void machine_process_ir(struct machine* m, struct intermediate ir) {
         default:
             PANIC("No such instruction: %i", ir.instr);
     }
+
+    m->rs[0] = 0; // Keep x0 = 0
 }
 
 void machine_debug_print(struct machine* m) {
