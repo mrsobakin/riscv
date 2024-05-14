@@ -63,10 +63,10 @@ void machine_process_ir(struct machine* m, struct intermediate ir) {
 
     switch(ir.instr) {
         case INSTR_LUI: // lui rd, imm
-            m->rs[ir.a] = sext20(ir.b) << 12;
+            m->rs[ir.a] = sext32((uint32_t)(ir.b) << 12);
             break;
         case INSTR_AUIPC: // auipc rd, imm
-            m->rs[ir.a] = m->pc + (sext20(ir.b) << 12);
+            m->rs[ir.a] = m->pc + sext32((uint32_t)(ir.b) << 12);
             break;
         case INSTR_JAL: // jal rd, offset
             m->rs[ir.a] = m->pc + 4;
