@@ -66,40 +66,40 @@ void machine_process_ir(struct machine* m, struct intermediate ir) {
             m->rs[ir.a] = sext32((uint32_t)(ir.b) << 12);
             break;
         case INSTR_AUIPC: // auipc rd, imm
-            m->rs[ir.a] = m->pc + sext32((uint32_t)(ir.b) << 12);
+            m->rs[ir.a] = m->pc + sext32((uint32_t)(ir.b) << 12) - 4;
             break;
         case INSTR_JAL: // jal rd, offset
             m->rs[ir.a] = m->pc + 4;
-            m->pc += sext20(ir.b); // TODO
+            m->pc += sext20(ir.b) - 4; // TODO
             break;
         case INSTR_JALR: // jalr rd, rs1, offset
             t = m->pc + 4;
-            m->pc = (m->rs[ir.b] + sext12(ir.c)) & ~1;
+            m->pc = (m->rs[ir.b] + sext12(ir.c) - 4) & ~1;
             m->rs[ir.a] = t;
             break;
         case INSTR_BEQ: // beq rs1, rs2, offset
             if (m->rs[ir.a] == m->rs[ir.b])
-                m->pc += sext12(ir.c);
+                m->pc += sext12(ir.c) - 4;
             break;
         case INSTR_BNE: // bne rs1, rs2, offset
             if (m->rs[ir.a] != m->rs[ir.b])
-                m->pc += sext12(ir.c);
+                m->pc += sext12(ir.c) - 4;
             break;
         case INSTR_BLT: // blt rs1, rs2, offset
             if (m->rs[ir.a] < m->rs[ir.b])
-                m->pc += sext12(ir.c);
+                m->pc += sext12(ir.c) - 4;
             break;
         case INSTR_BGE: // bge rs1, rs2, offset
             if (m->rs[ir.a] >= m->rs[ir.b])
-                m->pc += sext12(ir.c);
+                m->pc += sext12(ir.c) - 4;
             break;
         case INSTR_BLTU: // bltu rs1, rs2, offset
             if (m->rs[ir.a] < m->rs[ir.b])
-                m->pc += sext12(ir.c);
+                m->pc += sext12(ir.c) - 4;
             break;
         case INSTR_BGEU: // bge rs1, rs2, offset
             if (m->rs[ir.a] >= m->rs[ir.b])
-                m->pc += sext12(ir.c);
+                m->pc += sext12(ir.c) - 4;
             break;
             
         case INSTR_LB: // lb, rd, offset(rs1)
