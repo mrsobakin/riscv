@@ -34,6 +34,7 @@ union _cache_addr {
         uint32_t offset : CACHE_OFFSET_LEN;
         uint32_t index  : CACHE_INDEX_LEN;
         uint32_t tag    : CACHE_TAG_LEN;
+        uint32_t junk   : 32 - ADDR_LEN;
     } parts;
 };
 

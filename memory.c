@@ -78,6 +78,7 @@ bool _cache_access(struct cache* c, struct memory* m, union _cache_addr addr, ui
                 .tag = c->tags[addr.parts.index][way],
                 .index = addr.parts.index,
                 .offset = 0,
+                .junk = 0,
             }
         }.raw;
         memcpy(m->mem + old_addr, c->cache[addr.parts.index][way], CACHE_LINE_SIZE);
