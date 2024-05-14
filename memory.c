@@ -96,6 +96,9 @@ bool _cache_access(struct cache* c, struct memory* m, union _cache_addr addr, ui
 
 
 bool cache_read(struct cache* c, struct memory* m, uint32_t addr, uint8_t* val) {
+    if(addr > MEM_SIZE)
+        PANIC("Attempting to read from address outside of memory: %i", addr);
+
     union _cache_addr a = { .raw = addr };
     
     uint8_t* line;
@@ -109,6 +112,9 @@ bool cache_read(struct cache* c, struct memory* m, uint32_t addr, uint8_t* val) 
 }
 
 bool cache_write(struct cache* c, struct memory* m, uint32_t addr, uint8_t val) {
+    if(addr > MEM_SIZE)
+        PANIC("Attempting to write to address outside of memory: %i = %i", addr, val);
+
     union _cache_addr a = { .raw = addr };
     
     uint8_t* line;
