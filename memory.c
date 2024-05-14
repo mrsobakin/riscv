@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "config.h"
+#include "debug.h"
 
 
 void _cache_bit_plru_try_reset(struct cache* c, uint32_t index) {
@@ -100,9 +101,7 @@ bool cache_read(struct cache* c, struct memory* m, uint32_t addr, uint8_t* val) 
     uint8_t* line;
     bool hit = _cache_access(c, m, a, &line);
 
-#ifdef DEBUG
-    printf("cache r %i %s\n", addr, hit ? "hit" : "miss");
-#endif
+    debug("cache r %i %s\n", addr, hit ? "hit" : "miss");
 
     *val = line[a.parts.offset];
 
@@ -115,9 +114,7 @@ bool cache_write(struct cache* c, struct memory* m, uint32_t addr, uint8_t val) 
     uint8_t* line;
     bool hit = _cache_access(c, m, a, &line);
 
-#ifdef DEBUG
-    printf("cache w %i %i %s\n", addr, val, hit ? "hit" : "miss");
-#endif
+    debug("cache w %i %i %s\n", addr, val, hit ? "hit" : "miss");
 
     line[a.parts.offset] = val;
 
@@ -125,6 +122,8 @@ bool cache_write(struct cache* c, struct memory* m, uint32_t addr, uint8_t val) 
 }
 
 uint32_t mem_read8(struct memory* m, uint32_t addr) {
+    debug("memread8 @ %i\n", addr);
+
     ++m->total;
 
     uint8_t a;
@@ -136,6 +135,8 @@ uint32_t mem_read8(struct memory* m, uint32_t addr) {
 }
 
 uint32_t mem_read16(struct memory* m, uint32_t addr) {
+    debug("memread16 @ %i\n", addr);
+
     ++m->total;
 
     uint8_t a, b;
@@ -150,6 +151,8 @@ uint32_t mem_read16(struct memory* m, uint32_t addr) {
 }
 
 uint32_t mem_read32(struct memory* m, uint32_t addr) {
+    debug("memread32 @ %i\n", addr);
+
     ++m->total;
 
     uint8_t a, b, c, d;
@@ -168,6 +171,8 @@ uint32_t mem_read32(struct memory* m, uint32_t addr) {
 }
 
 void mem_write8(struct memory* m, uint32_t addr, uint32_t val) {
+    debug("memwrite8 @ %i = %i\n", addr, val);
+
     ++m->total;
     if (cache_write(&m->cache, m, addr, val)) {
         ++m->hits;
@@ -175,13 +180,18 @@ void mem_write8(struct memory* m, uint32_t addr, uint32_t val) {
 }
 
 void mem_write16(struct memory* m, uint32_t addr, uint32_t val) {
+    debug("memwrite16 @ %i = %i\n", addr, val);
+
     ++m->total;
     if (cache_write(&m->cache, m, addr, val) &
         cache_write(&m->cache, m, addr + 1, val >> 8)) {
+        ++m->hits;
     }
 }
 
 void mem_write32(struct memory* m, uint32_t addr, uint32_t val) {
+    debug("memwrite32 @ %i = %i\n", addr, val);
+
     ++m->total;
     if (cache_write(&m->cache, m, addr, val) &
         cache_write(&m->cache, m, addr + 1, val >> 8) &

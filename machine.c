@@ -4,8 +4,7 @@
 
 #include "core.h"
 #include "memory.h"
-
-#define sp 2
+#include "debug.h"
 
 // https://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
 int32_t sext20(uint32_t x) {
@@ -60,9 +59,7 @@ struct machine machine_new(enum cache_replacement_policy policy) {
 void machine_process_ir(struct machine* m, struct intermediate ir) {
     uint32_t t;
 
-#ifdef DEBUG
-    printf("Executing [i=%i, a=%i, b=%i, c=%i]\n", ir.instr, ir.a, ir.b, ir.c);
-#endif
+    debug("exec i=%i, a=%i, b=%i, c=%i\n", ir.instr, ir.a, ir.b, ir.c);
 
     switch(ir.instr) {
         case INSTR_LUI: // lui rd, imm
