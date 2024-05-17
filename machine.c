@@ -208,16 +208,28 @@ void machine_process_ir(struct machine* m, struct intermediate ir) {
             m->rs[ir.a] = ((int64_t)m->rs[ir.b] * (uint64_t)m->rs[ir.c]) >> XLEN;
             break;
         case INSTR_DIV: // div rd, rs1, rs2
-            m->rs[ir.a] = S(m->rs[ir.b], /, m->rs[ir.c]); // s
+            if (m->rs[ir.c])
+                m->rs[ir.a] = S(m->rs[ir.b], /, m->rs[ir.c]); // s
+            else
+                m->rs[ir.a] = 0xFFFFFFFF;
             break;
         case INSTR_DIVU: // divu rd, rs1, rs2
-            m->rs[ir.a] = U(m->rs[ir.b], /, m->rs[ir.c]); // u
+            if (m->rs[ir.c])
+                m->rs[ir.a] = U(m->rs[ir.b], /, m->rs[ir.c]); // u
+            else
+                m->rs[ir.a] = 0xFFFFFFFF;
             break;
         case INSTR_REM: // rem rd, rs1, rs2
-            m->rs[ir.a] = S(m->rs[ir.b], %, m->rs[ir.c]); // s
+            if (m->rs[ir.c])
+                m->rs[ir.a] = S(m->rs[ir.b], %, m->rs[ir.c]); // s
+            else
+                m->rs[ir.a] = m->rs[ir.b]; // s
             break;
         case INSTR_REMU: // rem rd, rs1, rs2
-            m->rs[ir.a] = U(m->rs[ir.b], %, m->rs[ir.c]); // u
+            if (m->rs[ir.c])
+                m->rs[ir.a] = U(m->rs[ir.b], %, m->rs[ir.c]); // s
+            else
+                m->rs[ir.a] = m->rs[ir.b]; // s
             break;
         default:
             PANIC("No such instruction: %i", ir.instr);
