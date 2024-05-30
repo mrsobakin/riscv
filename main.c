@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
 
     FILE* bin_fp = NULL;
     if (args.bin_path) {
-        bin_fp = fopen(args.bin_path, "w");
+        bin_fp = fopen(args.bin_path, "wb");
         if (!bin_fp) PANIC("Failed to open file %s", args.bin_path);
     }
 
